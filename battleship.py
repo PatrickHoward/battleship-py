@@ -1,3 +1,5 @@
+import random
+
 class Point:
     ROW_LETTERS = ('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j')
 
@@ -34,6 +36,13 @@ class Point:
             return Point(-1, -1)
         else:
             return Point(in_coord[1] - 1, Point.ROW_LETTERS.index(in_coord[0]))
+
+    @staticmethod
+    def random_coordinate():
+        x = random.randint(0, Point.MAX_ROW)
+        y = random.randint(0, Point.MAX_COL)
+
+        return Point(x, y)
 
 class Ship:
     def __init__(self, obj: str, length: int, start: Point, direction: str):
@@ -308,12 +317,26 @@ class Robot(Player):
         self.__difficulty = min(difficulty, Robot.MAX_DIFFICULTY)
 
     def setup(self):
-        test_carrier = Ship.make_by_name("Destroyer", Point(0, 0), 's')
-        self.self_board.place_ship(test_carrier)
+        ships_to_place = [['Carrier', "AAAAA"], ['Battleship', 'BBBB'], ['Cruiser', 'CCC'], ['Submarine', 'SSS'], ['Destroyer', 'DD']]
+        directions = ['n', 's', 'e', 'w']
+
+        for ship in ships_to_place:
+            valid_spot_found = False
+            while not valid_spot_found:
+                spot = Point.random_coordinate()
+                direction = random.choice(directions)
+
+                new_ship = Ship.make_by_name(ship[0], spot, direction)
+                if self.self_board.spaces_are_free(new_ship.get_coords(), new_ship.get_dir(), new_ship.get_length()):
+                    self.self_board.place_ship(new_ship)
+                    valid_spot_found = True
 
     def run_turn(self, game_logic: GameLogic):
-        pass
+        random_coordinate = Point.random_coordinate()
+        if self.__difficulty == 1:
+            pass
 
+        hit = game_logic.fire_missile(game_logic.get_opponent(self))
 
 class GameLogic:
     def __init__(self):
@@ -341,11 +364,9 @@ class GameLogic:
     def fire_missile(target: Player, coord: Point) -> bool:
         return target.receive_missile(coord)
 
-
 def main():
     logic = GameLogic()
     logic.setup_players()
     logic.run_game()
-
 
 main()
